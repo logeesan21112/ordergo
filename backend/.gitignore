@@ -1,0 +1,18 @@
+# Java compiled files
+*.class
+
+# Build outputs
+target/
+
+# IDE/editor
+.idea/
+.vscode/
+*.iml
+
+# Environment
+.env
+*.log
+
+# Maven/Gradle
+.mvn/
+.gradle/

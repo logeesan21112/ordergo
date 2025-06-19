@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+
+# Caches
+.cache/
+.next/
+
+# Environment files
+.env
+*.log
