@@ -2,17 +2,8 @@ import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import ApiService from "./ApiService";
 
-/**
- * ProtectedRoute
- * Only allows access if user is authenticated.
- * Redirects to /login if not authenticated.
- * 
- * Usage:
- * <ProtectedRoute element={<YourComponent />} />
- */
 export const ProtectedRoute = ({ element: Component }) => {
   const location = useLocation();
-
   return ApiService.isAuthenticated() ? (
     Component
   ) : (
@@ -20,18 +11,12 @@ export const ProtectedRoute = ({ element: Component }) => {
   );
 };
 
-/**
- * AdminRoute
- * Only allows access if user has ADMIN role.
- * Redirects to /login if not an admin.
- * 
- * Usage:
- * <AdminRoute element={<AdminComponent />} />
- */
 export const AdminRoute = ({ element: Component }) => {
   const location = useLocation();
+  const role = ApiService.getRole();
+  const isAuth = ApiService.isAuthenticated();
 
-  return ApiService.isAdmin() ? (
+  return isAuth && (role === "ADMIN" || role === "MANAGER") ? (
     Component
   ) : (
     <Navigate to="/login" replace state={{ from: location }} />

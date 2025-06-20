@@ -105,7 +105,11 @@ const VendorPage = () => {
             <Button variant="outlined" onClick={toggleViewAll}>
               {viewAll ? "View Less" : "View All"}
             </Button>
-            <Button variant="contained" onClick={() => handleAddEdit()}>Add Vendor</Button>
+            {ApiService.getRole() === "ADMIN" && (
+              <Button variant="contained" onClick={() => handleAddEdit()}>
+                Add Vendor
+              </Button>
+            )}
           </Stack>
         </Box>
 
@@ -147,16 +151,23 @@ const VendorPage = () => {
                     </Typography>
                   </CardContent>
 
-                  <CardActions sx={{ justifyContent: "flex-end" }}>
-                    <Stack direction="row" spacing={1}>
-                      <Button size="small" variant="outlined" onClick={() => handleAddEdit(product)}>
-                        Edit
-                      </Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => handleDeleteConfirm(product.id)}>
-                        Delete
-                      </Button>
-                    </Stack>
-                  </CardActions>
+                  {ApiService.getRole() === "ADMIN" && (
+                    <CardActions sx={{ justifyContent: "flex-end" }}>
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" variant="outlined" onClick={() => handleAddEdit(product)}>
+                          Edit
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          onClick={() => handleDeleteConfirm(product.id)}
+                        >
+                          Delete
+                        </Button>
+                      </Stack>
+                    </CardActions>
+                  )}
                 </Card>
               </Grid>
             ))

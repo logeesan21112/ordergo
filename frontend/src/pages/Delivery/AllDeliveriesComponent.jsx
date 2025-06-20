@@ -86,7 +86,8 @@ const AllDeliveries = () => {
 
       let visibleTransactions = [];
 
-      if (user.role === "ADMIN") {
+      const role = user.role;
+      if (role === "ADMIN" || role === "MANAGER") {
         visibleTransactions = allTransactions;
       } else {
         visibleTransactions = allTransactions.filter(
@@ -159,13 +160,9 @@ const AllDeliveries = () => {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h4">Transactions</Typography>
           <Stack direction="row" spacing={2}>
-            {currentUser?.role === "ADMIN" && (
-              <>
-                <Button variant="contained" onClick={() => setPattyModalOpen(true)}>
-                  Add Patty
-                </Button>
-              </>
-            )}
+            <Button variant="contained" onClick={() => setPattyModalOpen(true)}>
+              Add Patty
+            </Button>
             <Button variant="contained" onClick={() => setModalOpen(true)}>
               Add Order
             </Button>

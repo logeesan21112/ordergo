@@ -152,16 +152,18 @@ const RiderPage = () => {
                     </Typography>
                   </CardContent>
 
-                  <CardActions sx={{ justifyContent: "flex-end", mt: "auto" }}>
-                    <Stack direction="row" spacing={1}>
-                      <Button size="small" variant="outlined" onClick={() => handleAddEdit(rider)}>
-                        Edit
-                      </Button>
-                      <Button size="small" variant="outlined" color="error" onClick={() => handleDeleteConfirm(rider.id)}>
-                        Delete
-                      </Button>
-                    </Stack>
-                  </CardActions>
+                  {ApiService.getRole() === "ADMIN" && (
+                    <CardActions sx={{ justifyContent: "flex-end", mt: "auto" }}>
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" variant="outlined" onClick={() => handleAddEdit(rider)}>
+                          Edit
+                        </Button>
+                        <Button size="small" variant="outlined" color="error" onClick={() => handleDeleteConfirm(rider.id)}>
+                          Delete
+                        </Button>
+                      </Stack>
+                    </CardActions>
+                  )}
                 </Card>
               </Grid>
             ))

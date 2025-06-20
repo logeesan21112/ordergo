@@ -20,10 +20,10 @@ public class ProductController {
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Response> saveProduct(
-            @RequestParam("imageFile") MultipartFile imageFile,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             @RequestParam("name") String name,
-            @RequestParam("email") String email,
-            @RequestParam("address") String address,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "address", required = false) String address,
             @RequestParam("phoneNumber") String phoneNumber
     ) {
         ProductDTO productDTO = new ProductDTO();
@@ -34,6 +34,7 @@ public class ProductController {
 
         return ResponseEntity.ok(productService.saveProduct(productDTO, imageFile));
     }
+
 
     @PutMapping("/update")
     @PreAuthorize("hasAuthority('ADMIN')")

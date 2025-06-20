@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
 import {
   Drawer,
   List,
@@ -14,7 +13,6 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -25,7 +23,6 @@ import StoreIcon from "@mui/icons-material/Store";
 import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
-
 import ApiService from "../service/ApiService";
 
 const drawerWidth = 240;
@@ -39,11 +36,11 @@ const Sidebar = () => {
   const [open, setOpen] = useState(!isMobile);
   const [collapsed, setCollapsed] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
     setIsAuth(ApiService.isAuthenticated());
-    setIsAdmin(ApiService.isAdmin());
+    setRole(ApiService.getRole());
   }, []);
 
   useEffect(() => {
@@ -53,7 +50,6 @@ const Sidebar = () => {
 
   const toggleDrawer = () => setOpen((prev) => !prev);
   const toggleCollapse = () => setCollapsed((prev) => !prev);
-
   const handleLogout = () => {
     ApiService.logout();
     navigate("/login");
@@ -158,7 +154,7 @@ const Sidebar = () => {
                 {!collapsed && <ListItemText primary="Expenses" />}
               </ListItemButton>
 
-              {isAdmin && (
+              {(role === "ADMIN" || role === "MANAGER") && (
                 <>
                   <ListItemButton
                     component={Link}
@@ -229,10 +225,7 @@ const Sidebar = () => {
               {!collapsed && <ListItemText primary="Profile" />}
             </ListItemButton>
 
-            <ListItemButton
-              onClick={handleLogout}
-              sx={listItemButtonSx}
-            >
+            <ListItemButton onClick={handleLogout} sx={listItemButtonSx}>
               <ListItemIcon sx={listItemIconSx}>
                 <LogoutIcon />
               </ListItemIcon>

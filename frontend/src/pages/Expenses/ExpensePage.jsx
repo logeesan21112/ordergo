@@ -68,16 +68,13 @@ const ExpensePage = () => {
 
       let visibleExpenses = [];
 
-      if (user.role === "ADMIN") {
+      if (user.role === "ADMIN" || user.role === "MANAGER") {
         visibleExpenses = allExpenses;
       } else {
         visibleExpenses = allExpenses.filter((expense) => {
           if (typeof expense.user === "string") {
             return expense.user === user.name;
-          } else if (
-            typeof expense.user === "object" &&
-            expense.user !== null
-          ) {
+          } else if (typeof expense.user === "object" && expense.user !== null) {
             return expense.user.name === user.name;
           }
           return false;
@@ -272,9 +269,9 @@ const ExpensePage = () => {
                               <Table size="small">
                                 <TableHead>
                                   <TableRow>
-                                    <TableCell>ID</TableCell>
-                                    <TableCell>Date & Time</TableCell>
-                                    <TableCell>Description</TableCell>
+                                    <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
+                                    <TableCell sx={{ fontWeight: "bold" }}>Date & Time</TableCell>
+                                    <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
                                   </TableRow>
                                 </TableHead>
 

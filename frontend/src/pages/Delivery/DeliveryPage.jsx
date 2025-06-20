@@ -6,13 +6,14 @@ import DeliveryFilterComponent from "./DeliveryFilterComponent.jsx";
 import ApiService from "../../service/ApiService";
 
 const DeliveryPage = () => {
-  const isAdmin = ApiService.isAdmin();
+  const role = ApiService.getRole();
+  const isPrivileged = role === "ADMIN" || role === "MANAGER";
 
   return (
     <Layout>
       <AllDeliveriesComponent />
       <DeliveryFilterComponent />
-      {isAdmin && <TodayDeliveriesComponent />}
+      {isPrivileged && <TodayDeliveriesComponent />}
     </Layout>
   );
 };

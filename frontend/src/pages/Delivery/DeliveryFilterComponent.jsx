@@ -25,7 +25,7 @@ const DeliveryFilter = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const isAdmin = ApiService.isAdmin();
+  const isAdmin = ApiService.isAdmin() || ApiService.getRole() === "MANAGER";
 
   const [selectedUser, setSelectedUser] = useState(() => {
     const userParam = searchParams.get("user");

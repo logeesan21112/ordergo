@@ -23,6 +23,7 @@ const initialFormState = {
 
 const AddEditVendorModal = ({ open, handleClose, vendor, onSubmit }) => {
   const [form, setForm] = useState(initialFormState);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     setForm(vendor ? {
@@ -50,14 +51,49 @@ const AddEditVendorModal = ({ open, handleClose, vendor, onSubmit }) => {
     reader.readAsDataURL(file);
   };
 
+  const validate = () => {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = "Name is required";
+    if (!form.address.trim()) newErrors.address = "Address is required";
+
+    const phone = form.phoneNumber.trim();
+    if (!phone) {
+      newErrors.phoneNumber = "Phone number is required";
+    } else if (!/^\d{10}$/.test(phone)) {
+      newErrors.phoneNumber = "Phone number must be exactly 10 digits";
+    } else if (phone[0] !== "0") {
+      newErrors.phoneNumber = "Phone number must start with 0";
+    } else if (phone[1] === "0") {
+      newErrors.phoneNumber = "Second digit cannot be 0";
+    }
+
+    const email = form.email.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Enter a valid email address";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const submitHandler = async () => {
+    if (!validate()) return;
+
     try {
       const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("email", form.email);
-      formData.append("phoneNumber", form.phoneNumber);
-      formData.append("address", form.address);
-      if (form.imageFile) formData.append("imageFile", form.imageFile);
+      formData.append("name", form.name.trim());
+      formData.append("phoneNumber", form.phoneNumber.trim());
+      formData.append("address", form.address.trim());
+
+      const trimmedEmail = form.email.trim();
+      if (trimmedEmail !== "") {
+        formData.append("email", trimmedEmail);
+      }
+
+      if (form.imageFile) {
+        formData.append("imageFile", form.imageFile);
+      }
 
       const isEditing = Boolean(vendor?.id);
       if (isEditing) {
@@ -104,14 +140,15 @@ const AddEditVendorModal = ({ open, handleClose, vendor, onSubmit }) => {
                 key={field}
                 fullWidth
                 name={field}
-                label={field === 'phoneNumber' ? 'Contact Number' : 
-                      field === 'name' ? 'Vendor Name' : 
-                      field.charAt(0).toUpperCase() + field.slice(1)}
+                label={field === 'phoneNumber' ? 'Contact Number' :
+                  field === 'name' ? 'Vendor Name' :
+                  field.charAt(0).toUpperCase() + field.slice(1)}
                 type={field === 'email' ? 'email' : field === 'phoneNumber' ? 'tel' : 'text'}
                 value={form[field]}
                 onChange={handleChange}
                 margin="normal"
-                required
+                error={Boolean(errors[field])}
+                helperText={errors[field]}
               />
             ))}
 
