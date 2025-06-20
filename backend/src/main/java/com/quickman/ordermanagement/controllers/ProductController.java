@@ -35,7 +35,6 @@ public class ProductController {
         return ResponseEntity.ok(productService.saveProduct(productDTO, imageFile));
     }
 
-
     @PutMapping("/update")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Response> updateProduct(
