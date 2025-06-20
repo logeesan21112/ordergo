@@ -25,7 +25,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ModelMapper modelMapper;
-    private static final String IMAGE_DIRECTORY_2 = "E:/IMS-react-master/IMS-react-master/frontend/public/products/";
+    private static final String IMAGE_DIRECTORY_2 = "E:/quickman-order-management/frontend/public/products/";
 
     @Override
     public Response saveProduct(ProductDTO productDTO, MultipartFile imageFile) {
