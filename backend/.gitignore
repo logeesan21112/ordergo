@@ -1,18 +1,35 @@
-# Java compiled files
-*.class
-
-# Build outputs
+# Maven build output
 target/
+bin/
 
-# IDE/editor
+# Environment / secrets (NEVER commit these)
+src/main/resources/application-dev.properties
+src/main/resources/application-prod.properties
+
+# Eclipse project files
+.project
+.classpath
+.factorypath
+.settings/
+.metadata/
+
+# IntelliJ IDEA
 .idea/
-.vscode/
 *.iml
+*.iws
 
-# Environment
-.env
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Maven wrapper (optional — keep if you want others to build without Maven installed)
+# !mvnw
+# !mvnw.cmd
+# !.mvn/
+
+# Logs
 *.log
-
-# Maven/Gradle
-.mvn/
-.gradle/
+logs/

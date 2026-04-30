@@ -4,22 +4,13 @@ import ApiService from "../../service/ApiService";
 import AddEditVendorModal from "./AddEditVendorModal";
 import DeleteVendorModal from "./DeleteVendorModal";
 import {
-  Box,
-  Typography,
-  Button,
-  Card,
-  CardMedia,
-  CardContent,
-  CardActions,
-  Grid,
-  Alert,
-  Stack,
-  Pagination,
+  Box, Typography, Button, Card, CardContent,
+  CardActions, Grid, Alert, Stack, Pagination, Avatar,
 } from "@mui/material";
 
 const VendorPage = () => {
-  const [products, setProducts] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [allVendors, setAllVendors] = useState([]);
   const [message, setMessage] = useState("");
   const [addEditOpen, setAddEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -28,53 +19,37 @@ const VendorPage = () => {
   const [viewAll, setViewAll] = useState(false);
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(allProducts.length / itemsPerPage);
+  const totalPages = Math.ceil(allVendors.length / itemsPerPage);
 
   const fetchVendors = async () => {
     try {
-      const { status, products: productData } = await ApiService.getAllProducts();
+      const { status, vendors: vendorData } = await ApiService.getAllVendors();
       if (status === 200) {
-        setAllProducts(productData);
-        updateDisplayedProducts(productData);
+        setAllVendors(vendorData);
+        setVendors(viewAll
+          ? vendorData
+          : vendorData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+        );
       }
     } catch (error) {
       showMessage(error.response?.data?.message || "Error fetching vendors");
     }
   };
 
-  const updateDisplayedProducts = (products) => {
-    setProducts(viewAll 
-      ? products 
-      : products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-    );
-  };
-
-  useEffect(() => {
-    fetchVendors();
-  }, [currentPage, viewAll]);
+  useEffect(() => { fetchVendors(); }, [currentPage, viewAll]);
 
   const showMessage = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(""), 4000);
   };
 
-  const handleAddEdit = (vendor = null) => {
-    setSelectedVendor(vendor);
-    setAddEditOpen(true);
-  };
-
-  const handleDeleteConfirm = (vendorId) => {
-    setSelectedVendor({ id: vendorId });
-    setDeleteOpen(true);
-  };
-
   const confirmDelete = async () => {
     try {
-      await ApiService.deleteProduct(selectedVendor.id);
-      showMessage("Vendor successfully deleted");
-      const updatedProducts = allProducts.filter(p => p.id !== selectedVendor.id);
-      setAllProducts(updatedProducts);
-      updateDisplayedProducts(updatedProducts);
+      await ApiService.deleteVendor(selectedVendor.id);
+      showMessage("Vendor deleted successfully");
+      const updated = allVendors.filter((v) => v.id !== selectedVendor.id);
+      setAllVendors(updated);
+      setVendors(viewAll ? updated : updated.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
     } catch (error) {
       showMessage(error.response?.data?.message || "Error deleting vendor");
     } finally {
@@ -82,31 +57,23 @@ const VendorPage = () => {
     }
   };
 
-  const toggleViewAll = () => {
-    setViewAll(prev => {
-      if (!prev) setCurrentPage(1);
-      return !prev;
-    });
-  };
-
   return (
     <Layout>
       <Box sx={{
-        px: 3,
-        py: 3,
+        px: 3, py: 3,
         filter: addEditOpen || deleteOpen ? "blur(4px)" : "none",
         transition: "filter 0.3s ease",
       }}>
         {message && <Alert severity="info" sx={{ mb: 2 }}>{message}</Alert>}
 
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} gap={2}>
-          <Typography variant="h4" component="h1">Vendors</Typography>
+          <Typography variant="h4">Vendors</Typography>
           <Stack direction="row" spacing={2}>
-            <Button variant="outlined" onClick={toggleViewAll}>
+            <Button variant="outlined" onClick={() => setViewAll((prev) => !prev)}>
               {viewAll ? "View Less" : "View All"}
             </Button>
             {ApiService.getRole() === "ADMIN" && (
-              <Button variant="contained" onClick={() => handleAddEdit()}>
+              <Button variant="contained" onClick={() => { setSelectedVendor(null); setAddEditOpen(true); }}>
                 Add Vendor
               </Button>
             )}
@@ -114,55 +81,46 @@ const VendorPage = () => {
         </Box>
 
         <Grid container spacing={3}>
-          {products.length === 0 ? (
+          {vendors.length === 0 ? (
             <Typography variant="body1" color="text.secondary" sx={{ m: 2 }}>
               No vendors found.
             </Typography>
           ) : (
-            products.map(product => (
-              <Grid item key={product.id} xs={12} sm={6} md={4} lg={2.4} sx={{ display: "flex" }}>
+            vendors.map((vendor) => (
+              <Grid item key={vendor.id} xs={12} sm={6} md={4} lg={2.4} sx={{ display: "flex" }}>
                 <Card sx={{ width: "100%", display: "flex", flexDirection: "column" }}>
                   <Card sx={{ p: 2, display: "flex", background: "#5EB3F6", justifyContent: "center" }}>
-                    <CardMedia
-                      component="img"
-                      image={product.imageUrl || "/profile.png"}
-                      alt={product.name}
-                      sx={{ height: 100, width: 100, objectFit: "cover", borderRadius: "50%" }}
-                    />
+                    <Avatar
+                      src={vendor.imageUrl ? `/${vendor.imageUrl}` : ""}
+                      alt={vendor.name}
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        fontSize: 40,
+                        bgcolor: "#1976d2",
+                      }}
+                    >
+                      {!vendor.imageUrl && vendor.name
+                        ? vendor.name.charAt(0).toUpperCase()
+                        : null}
+                    </Avatar>
                   </Card>
 
                   <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography variant="h6" gutterBottom noWrap>{product.name}</Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ 
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden"
-                    }}>
-                      {product.email}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ 
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden"
-                    }}>
-                      +94 {product.phoneNumber}
-                    </Typography>
+                    <Typography variant="h6" gutterBottom noWrap>{vendor.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">{vendor.email}</Typography>
+                    <Typography variant="body2" color="text.secondary">+94 {vendor.phoneNumber}</Typography>
                   </CardContent>
 
                   {ApiService.getRole() === "ADMIN" && (
                     <CardActions sx={{ justifyContent: "flex-end" }}>
                       <Stack direction="row" spacing={1}>
-                        <Button size="small" variant="outlined" onClick={() => handleAddEdit(product)}>
+                        <Button size="small" variant="outlined"
+                          onClick={() => { setSelectedVendor(vendor); setAddEditOpen(true); }}>
                           Edit
                         </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          color="error"
-                          onClick={() => handleDeleteConfirm(product.id)}
-                        >
+                        <Button size="small" variant="outlined" color="error"
+                          onClick={() => { setSelectedVendor({ id: vendor.id }); setDeleteOpen(true); }}>
                           Delete
                         </Button>
                       </Stack>
@@ -176,14 +134,9 @@ const VendorPage = () => {
 
         {!viewAll && (
           <Box mt={3} display="flex" justifyContent="center">
-            <Pagination
-              count={totalPages}
-              page={currentPage}
+            <Pagination count={totalPages} page={currentPage}
               onChange={(_, value) => setCurrentPage(value)}
-              color="primary"
-              showFirstButton
-              showLastButton
-            />
+              color="primary" showFirstButton showLastButton />
           </Box>
         )}
       </Box>

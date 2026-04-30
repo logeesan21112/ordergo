@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  Box, 
-  Typography, 
-  TextField, 
-  Select, 
-  MenuItem, 
-  InputLabel,
-  FormControl, 
-  Button, 
-  Modal, 
-  Fade, 
-  Backdrop, 
-  Alert
+  Box, Typography, TextField, Select, MenuItem, InputLabel,
+  FormControl, Button, Modal, Fade, Backdrop, Alert,
 } from "@mui/material";
 import ApiService from "../../service/ApiService";
 
@@ -21,7 +11,7 @@ const AddEditExpenseModal = ({ open, onClose, expenseToEdit, onSave }) => {
     expenseType: "",
     expenseAmount: "",
     description: "",
-    userName: ""
+    userName: "",
   });
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState("");
@@ -34,8 +24,8 @@ const AddEditExpenseModal = ({ open, onClose, expenseToEdit, onSave }) => {
           const userData = await ApiService.getAllUsers();
           setUsers(userData.users);
         } else {
-          const user = await ApiService.getLoggedInUsesInfo();
-          setFormData(prev => ({ ...prev, userId: user.id, userName: user.name }));
+          const user = await ApiService.getLoggedInUserInfo();
+          setFormData((prev) => ({ ...prev, userId: user.id, userName: user.name }));
         }
       } catch (error) {
         showMessage(error.response?.data?.message || "Error getting users");
@@ -52,7 +42,7 @@ const AddEditExpenseModal = ({ open, onClose, expenseToEdit, onSave }) => {
         expenseType: expenseToEdit.expenseType || "",
         expenseAmount: expenseToEdit.expenseAmount?.toString() || "",
         description: expenseToEdit.description || "",
-        userName: expenseToEdit.userName || ""
+        userName: expenseToEdit.user || "",
       });
     } else {
       setFormData({
@@ -60,7 +50,7 @@ const AddEditExpenseModal = ({ open, onClose, expenseToEdit, onSave }) => {
         expenseType: "",
         expenseAmount: "",
         description: "",
-        userName: isAdmin ? "" : formData.userName
+        userName: isAdmin ? "" : formData.userName,
       });
       setMessage("");
     }
@@ -73,7 +63,7 @@ const AddEditExpenseModal = ({ open, onClose, expenseToEdit, onSave }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -87,15 +77,15 @@ const AddEditExpenseModal = ({ open, onClose, expenseToEdit, onSave }) => {
       userId: formData.userId,
       expenseType: formData.expenseType,
       expenseAmount: parseFloat(formData.expenseAmount),
-      description: formData.description
+      description: formData.description,
     };
 
     try {
       if (expenseToEdit) {
-        await ApiService.updateCharge(expenseToEdit.id, payload);
+        await ApiService.updateExpense(expenseToEdit.id, payload);
         showMessage("Expense updated successfully");
       } else {
-        await ApiService.addCharge(payload);
+        await ApiService.addExpense(payload);
         showMessage("Expense added successfully");
       }
       onSave();
@@ -137,12 +127,7 @@ const AddEditExpenseModal = ({ open, onClose, expenseToEdit, onSave }) => {
             {isAdmin ? (
               <FormControl fullWidth margin="normal" required>
                 <InputLabel>Rider</InputLabel>
-                <Select
-                  name="userId"
-                  value={formData.userId}
-                  onChange={handleChange}
-                  label="Rider"
-                >
+                <Select name="userId" value={formData.userId} onChange={handleChange} label="Rider">
                   <MenuItem value="">-- Select Rider --</MenuItem>
                   {users.map((user) => (
                     <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>
@@ -150,23 +135,12 @@ const AddEditExpenseModal = ({ open, onClose, expenseToEdit, onSave }) => {
                 </Select>
               </FormControl>
             ) : (
-              <TextField 
-                fullWidth 
-                label="Rider" 
-                value={formData.userName} 
-                margin="normal" 
-                disabled 
-              />
+              <TextField fullWidth label="Rider" value={formData.userName} margin="normal" disabled />
             )}
 
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Expense Type</InputLabel>
-              <Select
-                name="expenseType"
-                value={formData.expenseType}
-                onChange={handleChange}
-                label="Expense Type"
-              >
+              <Select name="expenseType" value={formData.expenseType} onChange={handleChange} label="Expense Type">
                 <MenuItem value="">-- Select Expense Type --</MenuItem>
                 <MenuItem value="FUEL_COSTS">Fuel Costs</MenuItem>
                 <MenuItem value="VEHICLE_MAINTENANCE">Vehicle Maintenance</MenuItem>
@@ -176,30 +150,21 @@ const AddEditExpenseModal = ({ open, onClose, expenseToEdit, onSave }) => {
             </FormControl>
 
             <TextField
-              fullWidth
-              name="expenseAmount"
-              label="Expense Amount"
-              type="number"
-              margin="normal"
-              required
+              fullWidth name="expenseAmount" label="Expense Amount"
+              type="number" margin="normal" required
               inputProps={{ min: 1 }}
               value={formData.expenseAmount}
               onChange={handleChange}
             />
 
             <TextField
-              fullWidth
-              name="description"
-              label="Description"
-              margin="normal"
-              value={formData.description}
+              fullWidth name="description" label="Description"
+              margin="normal" value={formData.description}
               onChange={handleChange}
             />
 
             <Box mt={2} display="flex" justifyContent="space-between">
-              <Button variant="outlined" onClick={onClose}>
-                Cancel
-              </Button>
+              <Button variant="outlined" onClick={onClose}>Cancel</Button>
               <Button type="submit" variant="contained" color="primary">
                 {expenseToEdit ? "Update" : "Submit"}
               </Button>

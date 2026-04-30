@@ -1,17 +1,11 @@
 import React, { useEffect, useState } from "react";
 import ApiService from "../../service/ApiService";
 import {
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  CircularProgress,
+  Box, Typography, Table, TableBody, TableCell,
+  TableHead, TableRow, CircularProgress,
 } from "@mui/material";
 
-const TodayDeliveries = () => {
+const TodayDeliveriesComponent = () => {
   const [todayTotals, setTodayTotals] = useState(null);
   const [message, setMessage] = useState("");
 
@@ -33,10 +27,16 @@ const TodayDeliveries = () => {
   };
 
   const formatAmount = (val) =>
-    val !== null && val !== undefined
-      ? Number(val).toFixed(2)
-      : "-";
+    val !== null && val !== undefined ? Number(val).toFixed(2) : "-";
 
+  const formatDateTime = (inputDate) => {
+    const d = new Date(inputDate);
+    const hours = d.getHours();
+    const minutes = d.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const hour12 = hours % 12 || 12;
+    return `${hour12}:${minutes} ${ampm} ${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+  };
 
   if (!todayTotals) {
     return (
@@ -48,68 +48,46 @@ const TodayDeliveries = () => {
 
   const {
     totalDeliveryCharge,
-    totalPattyCash,
+    totalPettyCash,
     totalCardOrOnlinePayment,
     totalExpenses,
     balanceAmount,
     date,
   } = todayTotals;
 
-  const totalDP = totalDeliveryCharge + totalPattyCash;
+  const totalDP = totalDeliveryCharge + totalPettyCash;
   const totalCE = totalCardOrOnlinePayment + totalExpenses;
 
-  const formatDateTime = (inputDate) => {
-  const d = new Date(inputDate);
-  const hours = d.getHours();
-  const minutes = d.getMinutes().toString().padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const hour12 = hours % 12 || 12;
-  const formattedTime = `${hour12}:${minutes} ${ampm}`;
-  const formattedDate = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
-  return `${formattedTime} ${formattedDate}`;
-};
-
-
   return (
-    <Box sx={{ px: 3, py:3, bgcolor: "#fbfdfb" }}>
+    <Box sx={{ px: 3, py: 3, bgcolor: "#fbfdfb" }}>
       {message && (
-        <Typography color="error" sx={{ mb: 2 }}>
-          {message}
-        </Typography>
-        
+        <Typography color="error" sx={{ mb: 2 }}>{message}</Typography>
       )}
-      
-      <Box
-        sx={{
-          bgcolor: "background.paper",
-          borderRadius: 1,
-          boxShadow: 1,
-          overflowX: "auto",
-        }}
-      >
+
+      <Box sx={{ bgcolor: "background.paper", borderRadius: 1, boxShadow: 1, overflowX: "auto" }}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
               <TableCell align="right" sx={{ fontWeight: "bold" }}>Delivery Charge</TableCell>
-              <TableCell align="right" sx={{ fontWeight: "bold" }}>Patty Cash</TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>Petty Cash</TableCell>
               <TableCell align="right" sx={{ fontWeight: "bold" }}>Card/Online</TableCell>
               <TableCell align="right" sx={{ fontWeight: "bold" }}>Expenses</TableCell>
               <TableCell align="right" sx={{ fontWeight: "bold" }}>Balance Amount</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {/* Actual Amounts Row */}
+            {/* amounts row */}
             <TableRow hover>
               <TableCell>{date ? formatDateTime(date) : "-"}</TableCell>
               <TableCell align="right">{formatAmount(totalDeliveryCharge)}</TableCell>
-              <TableCell align="right">{formatAmount(totalPattyCash)}</TableCell>
+              <TableCell align="right">{formatAmount(totalPettyCash)}</TableCell>
               <TableCell align="right">{formatAmount(totalCardOrOnlinePayment)}</TableCell>
               <TableCell align="right">{formatAmount(totalExpenses)}</TableCell>
               <TableCell />
             </TableRow>
 
-            {/* Totals Row */}
+            {/* totals row */}
             <TableRow hover>
               <TableCell />
               <TableCell />
@@ -125,4 +103,4 @@ const TodayDeliveries = () => {
   );
 };
 
-export default TodayDeliveries;
+export default TodayDeliveriesComponent;

@@ -1,10 +1,9 @@
-# Root-level ignores
-.env
-*.log
+# IDE metadata
+.metadata/
+
+# LinkedIn carousel assets
+linkedin carousel/
+
+# OS files
 .DS_Store
 Thumbs.db
-
-# Ignore IDE/editor config
-.vscode/
-.idea/
-*.iml

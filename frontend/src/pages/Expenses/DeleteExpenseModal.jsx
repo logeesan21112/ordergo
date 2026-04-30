@@ -1,11 +1,11 @@
 import React from "react";
 import { Modal, Box, Typography, Button, Fade, Backdrop } from "@mui/material";
 
-const DeleteExpenseModal = ({ 
-  open, 
-  onClose, 
-  onConfirm, 
-  message = "Are you sure to delete?" 
+const DeleteExpenseModal = ({
+  open,
+  onClose,
+  onConfirm,
+  message = "Are you sure you want to delete this expense?",
 }) => (
   <Modal
     open={open}
@@ -15,18 +15,20 @@ const DeleteExpenseModal = ({
     BackdropProps={{ timeout: 500 }}
   >
     <Fade in={open}>
-      <Box sx={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: 300,
-        bgcolor: "background.paper",
-        borderRadius: 2,
-        boxShadow: 24,
-        p: 3,
-        textAlign: "center",
-      }}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 300,
+          bgcolor: "background.paper",
+          borderRadius: 2,
+          boxShadow: 24,
+          p: 3,
+          textAlign: "center",
+        }}
+      >
         <Typography variant="h6" mb={2}>{message}</Typography>
         <Box display="flex" justifyContent="space-around" mt={3}>
           <Button variant="outlined" onClick={onClose}>Cancel</Button>

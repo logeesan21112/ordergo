@@ -2,27 +2,17 @@ import React, { useState, useEffect } from "react";
 import ApiService from "../../service/ApiService";
 import Select from "react-select";
 import {
-  Box,
-  Button,
-  CardContent,
-  Checkbox,
-  Modal,
-  Backdrop,
-  Fade,
-  FormControlLabel,
-  MenuItem,
-  Radio,
-  TextField,
-  Typography,
+  Box, Button, CardContent, Checkbox, Modal, Backdrop, Fade,
+  FormControlLabel, MenuItem, Radio, TextField, Typography,
 } from "@mui/material";
 
-const AddEditDeliveryModal = ({ open, onClose, editData }) => {
+const AddEditDeliveryModal = ({ open, onClose, editData, onSave}) => {
   const [incomeType, setIncomeType] = useState("");
   const [paymentType, setPaymentType] = useState([]);
   const [cardOrOnlinePayment, setCardOrOnlinePayment] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
-  const [products, setProducts] = useState([]);
-  const [productId, setProductId] = useState("");
+  const [vendors, setVendors] = useState([]);
+  const [vendorId, setVendorId] = useState("");
   const [description, setDescription] = useState("");
   const [locationUrl, setLocationUrl] = useState("Getting location...");
   const [deliveryCharge, setDeliveryCharge] = useState("");
@@ -55,30 +45,18 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
       color: "#000",
       fontSize: "0.875rem",
       fontFamily: '"Roboto","Helvetica","Arial",sans-serif',
-      "&:active": {
-        backgroundColor: "rgba(0, 0, 0, 0.08)",
-      },
+      "&:active": { backgroundColor: "rgba(0, 0, 0, 0.08)" },
     }),
-    singleValue: (base) => ({
-      ...base,
-      color: "rgba(0, 0, 0, 0.87)",
-      fontSize: "1rem",
-    }),
-    placeholder: (base) => ({
-      ...base,
-      color: "rgba(0, 0, 0, 0.6)",
-      fontSize: "1rem",
-    }),
+    singleValue: (base) => ({ ...base, color: "rgba(0, 0, 0, 0.87)", fontSize: "1rem" }),
+    placeholder: (base) => ({ ...base, color: "rgba(0, 0, 0, 0.6)", fontSize: "1rem" }),
   };
 
   useEffect(() => {
     if (editData) {
-      setProductId(editData.productId);
+      setVendorId(editData.vendorId);
       setDeliveryCharge(editData.deliveryCharge.toString());
       setIncomeType(editData.incomeType.replaceAll(" ", "_"));
-      setPaymentType(
-        editData.paymentType.split(" AND ").map((t) => t.replaceAll(" ", "_"))
-      );
+      setPaymentType(editData.paymentType.split(" AND ").map((t) => t.replaceAll(" ", "_")));
       setPaymentStatus(editData.paymentStatus.replaceAll(" ", "_"));
       setCardOrOnlinePayment(editData.cardOrOnlinePayment.toString());
       setDescription(editData.description || "");
@@ -89,7 +67,7 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
       setPaymentType([]);
       setCardOrOnlinePayment("");
       setPaymentStatus("");
-      setProductId("");
+      setVendorId("");
       setDescription("");
       setDeliveryCharge("");
       setMessage("");
@@ -106,14 +84,14 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const prodRes = await ApiService.getAllProducts();
-        setProducts(prodRes.products);
+        const vendorRes = await ApiService.getAllVendors();
+        setVendors(vendorRes.vendors);
 
         if (isAdmin) {
           const userRes = await ApiService.getAllUsers();
           setUsers(userRes.users);
         } else {
-          const user = await ApiService.getLoggedInUsesInfo();
+          const user = await ApiService.getLoggedInUserInfo();
           setUserId(user.id);
           setUserName(user.name);
         }
@@ -122,9 +100,7 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
       }
     };
 
-    if (open) {
-      fetchData();
-    }
+    if (open) fetchData();
   }, [open, isAdmin]);
 
   const handleCheckboxChange = (e) => {
@@ -140,7 +116,7 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
 
     const payload = {
       userId,
-      productId: parseInt(productId),
+      vendorId: parseInt(vendorId),
       deliveryCharge: parseFloat(deliveryCharge),
       cardOrOnlinePayment:
         paymentType.includes("CARD") || paymentType.includes("ONLINE_TRANSFER")
@@ -155,13 +131,12 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
 
     try {
       if (isEditMode) {
-        await ApiService.updateTransaction(editData.id, payload);
-        setMessage("Updated successfully");
+        await ApiService.updateDelivery(editData.id, payload);
       } else {
-        await ApiService.sellProduct(payload);
-        setMessage("Submitted successfully");
+        await ApiService.addDelivery(payload);
       }
-      onClose();
+      if (onSave) onSave();
+      else onClose();
     } catch (err) {
       setMessage("Error submitting form");
     } finally {
@@ -176,12 +151,7 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
       closeAfterTransition
       BackdropComponent={Backdrop}
       BackdropProps={{ timeout: 500 }}
-      sx={{
-        overflowY: "auto",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      sx={{ overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center" }}
     >
       <Fade in={open}>
         <Box
@@ -199,7 +169,7 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
         >
           <CardContent>
             <Typography variant="h5" gutterBottom align="center" fontWeight="bold">
-              {isEditMode ? "Edit Order" : "New Order"}
+              {isEditMode ? "Edit Delivery" : "New Delivery"}
             </Typography>
 
             <Box
@@ -208,9 +178,7 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
                 overflowY: "auto",
                 pr: 1,
                 scrollbarWidth: "none",
-                "&::-webkit-scrollbar": {
-                  display: "none",
-                },
+                "&::-webkit-scrollbar": { display: "none" },
               }}
             >
               {isAdmin ? (
@@ -223,34 +191,26 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
                   margin="normal"
                 >
                   {users.map((u) => (
-                    <MenuItem key={u.id} value={u.id}>
-                      {u.name}
-                    </MenuItem>
+                    <MenuItem key={u.id} value={u.id}>{u.name}</MenuItem>
                   ))}
                 </TextField>
               ) : (
                 <TextField label="Rider" fullWidth value={userName} margin="normal" disabled />
               )}
 
-              <Typography fontWeight={500} mt={2}>
-                Income Type
-              </Typography>
+              <Typography fontWeight={500} mt={2}>Income Type</Typography>
               <Box sx={{ display: "flex", gap: 2 }}>
                 {["DELIVERYCHARGE", "COMMISSION", "TIPS"].map((type) => (
                   <FormControlLabel
                     key={type}
                     value={type}
-                    control={
-                      <Radio checked={incomeType === type} onChange={() => setIncomeType(type)} />
-                    }
+                    control={<Radio checked={incomeType === type} onChange={() => setIncomeType(type)} />}
                     label={type}
                   />
                 ))}
               </Box>
 
-              <Typography fontWeight={500} mt={2}>
-                Payment Type
-              </Typography>
+              <Typography fontWeight={500} mt={2}>Payment Type</Typography>
               <Box sx={{ display: "flex", gap: 2 }}>
                 {["CASH", "CARD", "ONLINE_TRANSFER"].map((type) => (
                   <FormControlLabel
@@ -287,9 +247,7 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
                 margin="normal"
               >
                 {["COMPLETED", "PENDING", "PROCESSING", "CANCELLED"].map((status) => (
-                  <MenuItem key={status} value={status}>
-                    {status}
-                  </MenuItem>
+                  <MenuItem key={status} value={status}>{status}</MenuItem>
                 ))}
               </TextField>
 
@@ -305,16 +263,13 @@ const AddEditDeliveryModal = ({ open, onClose, editData }) => {
               <Box mt={2} mb={2}>
                 <Select
                   styles={customSelectStyles}
-                  options={products.map((p) => ({ value: p.id, label: p.name }))}
+                  options={vendors.map((v) => ({ value: v.id, label: v.name }))}
                   value={
-                    products.find((p) => p.id === parseInt(productId))
-                      ? {
-                          value: parseInt(productId),
-                          label: products.find((p) => p.id === parseInt(productId)).name,
-                        }
+                    vendors.find((v) => v.id === parseInt(vendorId))
+                      ? { value: parseInt(vendorId), label: vendors.find((v) => v.id === parseInt(vendorId)).name }
                       : null
                   }
-                  onChange={(opt) => setProductId(opt ? opt.value : "")}
+                  onChange={(opt) => setVendorId(opt ? opt.value : "")}
                   placeholder="Select / Search Vendor"
                   isClearable
                   isSearchable

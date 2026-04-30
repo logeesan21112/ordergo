@@ -24,6 +24,7 @@ import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ApiService from "../service/ApiService";
+import logo from "../assets/logo.svg";
 
 const drawerWidth = 240;
 const collapsedWidth = 72;
@@ -50,6 +51,7 @@ const Sidebar = () => {
 
   const toggleDrawer = () => setOpen((prev) => !prev);
   const toggleCollapse = () => setCollapsed((prev) => !prev);
+
   const handleLogout = () => {
     ApiService.logout();
     navigate("/login");
@@ -113,11 +115,16 @@ const Sidebar = () => {
             }}
           >
             <img
-              src="logo.png"
-              alt="App Logo"
-              style={{ height: 80, display: collapsed ? "none" : "block" }}
+              src={logo}
+              alt="OrderGo Logo"
+              style={{
+                height: 80,
+                display: collapsed ? "none" : "block",
+                objectFit: "contain",
+              }}
             />
           </Box>
+
           {!isMobile && (
             <IconButton onClick={toggleCollapse}>
               {collapsed ? <MenuIcon /> : <ChevronLeftIcon />}
@@ -132,14 +139,14 @@ const Sidebar = () => {
             <>
               <ListItemButton
                 component={Link}
-                to="/orders"
+                to="/deliveries"
                 onClick={() => isMobile && toggleDrawer()}
                 sx={listItemButtonSx}
               >
                 <ListItemIcon sx={listItemIconSx}>
                   <ArticleIcon />
                 </ListItemIcon>
-                {!collapsed && <ListItemText primary="Orders" />}
+                {!collapsed && <ListItemText primary="Deliveries" />}
               </ListItemButton>
 
               <ListItemButton

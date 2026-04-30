@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../../layout/Layout";
 import ApiService from "../../service/ApiService";
-import AddEditRiderModal from "./EditRiderModal";
+import EditRiderModal from "./EditRiderModal";
 import DeleteRiderModal from "./DeleteRiderModal";
 import {
-  Box,
-  Typography,
-  Button,
-  Card,
-  CardMedia,
-  CardContent,
-  CardActions,
-  Grid,
-  Alert,
-  Stack,
-  Pagination,
+  Box, Typography, Button, Card, CardContent,
+  CardActions, Grid, Alert, Stack, Pagination, Avatar,
 } from "@mui/material";
 
 const RiderPage = () => {
@@ -35,35 +26,22 @@ const RiderPage = () => {
       const response = await ApiService.getAllUsers();
       if (response.status === 200) {
         setAllRiders(response.users);
-        const total = response.users.length;
-        setTotalPages(Math.ceil(total / itemsPerPage));
-        const paginated = viewAll
+        setTotalPages(Math.ceil(response.users.length / itemsPerPage));
+        setRiders(viewAll
           ? response.users
-          : response.users.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-        setRiders(paginated);
+          : response.users.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+        );
       }
     } catch (error) {
       showMessage(error.response?.data?.message || "Error fetching riders");
     }
   };
 
-  useEffect(() => {
-    fetchRiders();
-  }, [currentPage, viewAll]);
+  useEffect(() => { fetchRiders(); }, [currentPage, viewAll]);
 
   const showMessage = (msg) => {
     setMessage(msg);
     setTimeout(() => setMessage(""), 4000);
-  };
-
-  const handleAddEdit = (rider = null) => {
-    setSelectedRider(rider);
-    setAddEditOpen(true);
-  };
-
-  const handleDeleteConfirm = (riderId) => {
-    setSelectedRider({ id: riderId });
-    setDeleteOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -80,35 +58,18 @@ const RiderPage = () => {
     }
   };
 
-  const toggleViewAll = () => {
-    if (viewAll) {
-      setCurrentPage(1);
-    }
-    setViewAll(!viewAll);
-  };
-
   return (
     <Layout>
-      <Box
-        sx={{
-          px: 3,
-          py: 3,
-          filter: addEditOpen || deleteOpen ? "blur(4px)" : "none",
-          transition: "filter 0.3s ease",
-        }}
-      >
-        {message && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            {message}
-          </Alert>
-          
-        )}
-        
+      <Box sx={{
+        px: 3, py: 3,
+        filter: addEditOpen || deleteOpen ? "blur(4px)" : "none",
+        transition: "filter 0.3s ease",
+      }}>
+        {message && <Alert severity="info" sx={{ mb: 2 }}>{message}</Alert>}
+
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
-          <Typography variant="h4" component="h1">
-            Riders
-          </Typography>
-          <Button variant="outlined" onClick={toggleViewAll}>
+          <Typography variant="h4">Riders</Typography>
+          <Button variant="outlined" onClick={() => setViewAll((prev) => !prev)}>
             {viewAll ? "View Less" : "View All"}
           </Button>
         </Box>
@@ -122,43 +83,39 @@ const RiderPage = () => {
             riders.map((rider) => (
               <Grid item key={rider.id} xs={12} sm={6} md={4} lg={2.4} sx={{ display: "flex" }}>
                 <Card sx={{ width: "100%", display: "flex", flexDirection: "column" }}>
-                  <Card sx={{ padding: 2, display: "flex", background: "#5EB3F6", justifyContent: "center" }}>
-                    <CardMedia
-                      component="img"
-                      image={rider.imageUrl || "/profile.png"}
+                  <Card sx={{ p: 2, display: "flex", background: "#5EB3F6", justifyContent: "center" }}>
+                    <Avatar
+                      src={rider.imageUrl ? `/${rider.imageUrl}` : ""}
                       alt={rider.name}
                       sx={{
-                        height: 100,
                         width: 100,
-                        objectFit: "cover",
-                        borderRadius: "50%",
-                        flexShrink: 0,
+                        height: 100,
+                        fontSize: 40,
+                        bgcolor: "#1976d2",
                       }}
-                    />
+                    >
+                      {!rider.imageUrl && rider.name
+                        ? rider.name.charAt(0).toUpperCase()
+                        : null}
+                    </Avatar>
                   </Card>
 
-                  <CardContent sx={{ flexGrow: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                    <Typography variant="h6" gutterBottom noWrap>
-                      {rider.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ textOverflow: "ellipsis", overflow: "hidden" }}>
-                      {rider.email}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ textOverflow: "ellipsis", overflow: "hidden" }}>
-                      +94 {rider.phoneNumber}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ textOverflow: "ellipsis", overflow: "hidden" }}>
-                      {rider.role}
-                    </Typography>
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" gutterBottom noWrap>{rider.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">{rider.email}</Typography>
+                    <Typography variant="body2" color="text.secondary">+94 {rider.phoneNumber}</Typography>
+                    <Typography variant="body2" color="text.secondary">{rider.role}</Typography>
                   </CardContent>
 
                   {ApiService.getRole() === "ADMIN" && (
-                    <CardActions sx={{ justifyContent: "flex-end", mt: "auto" }}>
+                    <CardActions sx={{ justifyContent: "flex-end" }}>
                       <Stack direction="row" spacing={1}>
-                        <Button size="small" variant="outlined" onClick={() => handleAddEdit(rider)}>
+                        <Button size="small" variant="outlined"
+                          onClick={() => { setSelectedRider(rider); setAddEditOpen(true); }}>
                           Edit
                         </Button>
-                        <Button size="small" variant="outlined" color="error" onClick={() => handleDeleteConfirm(rider.id)}>
+                        <Button size="small" variant="outlined" color="error"
+                          onClick={() => { setSelectedRider({ id: rider.id }); setDeleteOpen(true); }}>
                           Delete
                         </Button>
                       </Stack>
@@ -172,19 +129,14 @@ const RiderPage = () => {
 
         {!viewAll && (
           <Box mt={3} display="flex" justifyContent="center">
-            <Pagination
-              count={totalPages}
-              page={currentPage}
+            <Pagination count={totalPages} page={currentPage}
               onChange={(_, value) => setCurrentPage(value)}
-              color="primary"
-              showFirstButton
-              showLastButton
-            />
+              color="primary" showFirstButton showLastButton />
           </Box>
         )}
       </Box>
 
-      <AddEditRiderModal
+      <EditRiderModal
         open={addEditOpen}
         handleClose={() => setAddEditOpen(false)}
         rider={selectedRider}

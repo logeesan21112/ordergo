@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import ApiService from "../service/ApiService";
 import Layout from "../layout/Layout";
 
-// Marker icon setup
+// setup leaflet marker icons
 const setupLeafletIcons = () => {
   delete L.Icon.Default.prototype._getIconUrl;
   L.Icon.Default.mergeOptions({
-    iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-    iconUrl: require('leaflet/dist/images/marker-icon.png'),
-    shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+    iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+    iconUrl: require("leaflet/dist/images/marker-icon.png"),
+    shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
   });
 };
 
@@ -19,40 +19,40 @@ setupLeafletIcons();
 
 const extractLatLng = (url) => {
   try {
-    const [lat, lng] = new URL(url).searchParams.get('q').split(',').map(Number);
+    const [lat, lng] = new URL(url).searchParams.get("q").split(",").map(Number);
     return { lat, lng };
   } catch {
     return null;
   }
 };
 
-const DEFAULT_CENTER = { lat: 6.7570, lng: 80.7700 };
+const DEFAULT_CENTER = { lat: 6.757, lng: 80.77 };
 
-export default function LocationMap() {
+export default function LocationsPage() {
   const [locations, setLocations] = useState([]);
   const [center, setCenter] = useState(DEFAULT_CENTER);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDeliveryLocations = async () => {
       try {
-        const { transactions } = await ApiService.getAllTransactionLocations();
-        const coords = (transactions || [])
-          .map(tx => extractLatLng(tx.location))
+        const { deliveries } = await ApiService.getAllDeliveryLocations();
+        const coords = (deliveries || [])
+          .map((d) => extractLatLng(d.location))
           .filter(Boolean);
         setLocations(coords);
       } catch (err) {
-        console.error('Error loading locations:', err);
+        console.error("Error loading locations:", err);
       }
     };
 
     const getCurrentPosition = () => {
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => setCenter({ lat: coords.latitude, lng: coords.longitude }),
-        () => console.warn('Using default center location')
+        () => console.warn("Using default center location")
       );
     };
 
-    fetchData();
+    fetchDeliveryLocations();
     getCurrentPosition();
   }, []);
 
@@ -61,7 +61,7 @@ export default function LocationMap() {
       <MapContainer
         center={center}
         zoom={10}
-        style={{ height: 'calc(100vh - 64px)', width: '100%' }}
+        style={{ height: "calc(100vh - 64px)", width: "100%" }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

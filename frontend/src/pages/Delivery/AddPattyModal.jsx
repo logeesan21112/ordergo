@@ -1,27 +1,16 @@
 import React, { useState, useEffect } from "react";
 import {
-  Modal,
-  Box,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  Button,
-  Alert,
-  Backdrop,
-  Fade,
-  CardContent,
+  Modal, Box, Typography, TextField, Select, MenuItem,
+  InputLabel, FormControl, Button, Alert, Backdrop, Fade, CardContent,
 } from "@mui/material";
 import ApiService from "../../service/ApiService";
 
-const AddPattyModal = ({ open, onClose }) => {
+const AddPettyCashModal = ({ open, onClose }) => {
   const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     userId: "",
     userName: "",
-    pattyCash: ""
+    pettyCash: "",
   });
   const [message, setMessage] = useState("");
 
@@ -36,8 +25,8 @@ const AddPattyModal = ({ open, onClose }) => {
           const { users } = await ApiService.getAllUsers();
           setUsers(users);
         } else {
-          const user = await ApiService.getLoggedInUsesInfo();
-          setFormData(prev => ({ ...prev, userId: user.id, userName: user.name }));
+          const user = await ApiService.getLoggedInUserInfo();
+          setFormData((prev) => ({ ...prev, userId: user.id, userName: user.name }));
         }
       } catch (error) {
         showMessage(error.response?.data?.message || "Error getting users");
@@ -49,35 +38,34 @@ const AddPattyModal = ({ open, onClose }) => {
 
   const showMessage = (msg) => {
     setMessage(msg);
-    const timer = setTimeout(() => setMessage(""), 4000);
-    return () => clearTimeout(timer);
+    setTimeout(() => setMessage(""), 4000);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.userId || !formData.pattyCash) {
+    if (!formData.userId || !formData.pettyCash) {
       showMessage("Please select a user and enter the amount.");
       return;
     }
 
     try {
-      await ApiService.addPattyCash({
+      await ApiService.addPettyCash({
         userId: formData.userId,
-        pattyCash: parseFloat(formData.pattyCash)
+        pettyCash: parseFloat(formData.pettyCash),
       });
 
-      showMessage("Patty cash recorded successfully");
-      setFormData(prev => ({ ...prev, pattyCash: "" }));
+      showMessage("Petty cash recorded successfully");
+      setFormData((prev) => ({ ...prev, pettyCash: "" }));
       setTimeout(onClose, 1000);
     } catch (error) {
-      showMessage(error.response?.data?.message || "Error recording patty cash");
+      showMessage(error.response?.data?.message || "Error recording petty cash");
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -89,55 +77,49 @@ const AddPattyModal = ({ open, onClose }) => {
       BackdropProps={{ timeout: 500 }}
     >
       <Fade in={open}>
-        <Box sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: { xs: "90%", sm: 500 },
-          bgcolor: "background.paper",
-          borderRadius: 2,
-          boxShadow: 24,
-          p: 3,
-        }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 500 },
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 3,
+          }}
+        >
           <CardContent>
             <Typography variant="h5" gutterBottom align="center" fontWeight="bold">
-              Add Patty Cash
+              Add Petty Cash
             </Typography>
 
             {message && <Alert severity="info" sx={{ mb: 2 }}>{message}</Alert>}
 
             {isAdmin ? (
               <FormControl fullWidth margin="normal" required>
-                <InputLabel>User</InputLabel>
+                <InputLabel>Rider</InputLabel>
                 <Select
                   value={formData.userId}
-                  label="User"
-                  onChange={(e) => setFormData(prev => ({ ...prev, userId: e.target.value }))}
+                  label="Rider"
+                  onChange={(e) => setFormData((prev) => ({ ...prev, userId: e.target.value }))}
                 >
                   {users.map((user) => (
-                    <MenuItem key={user.id} value={user.id}>
-                      {user.name}
-                    </MenuItem>
+                    <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
             ) : (
-              <TextField
-                fullWidth
-                label="User"
-                value={formData.userName}
-                disabled
-                margin="normal"
-              />
+              <TextField fullWidth label="Rider" value={formData.userName} disabled margin="normal" />
             )}
 
             <TextField
               fullWidth
-              label="Patty Cash Amount"
+              label="Petty Cash Amount"
               type="number"
-              name="pattyCash"
-              value={formData.pattyCash}
+              name="pettyCash"
+              value={formData.pettyCash}
               onChange={handleChange}
               required
               inputProps={{ min: 1, step: 0.01 }}
@@ -145,15 +127,9 @@ const AddPattyModal = ({ open, onClose }) => {
             />
 
             <Box mt={2} display="flex" justifyContent="space-between">
-              <Button variant="outlined" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button 
-                variant="contained" 
-                onClick={handleSubmit}
-                color="primary"
-              >
-                Add Patty
+              <Button variant="outlined" onClick={onClose}>Cancel</Button>
+              <Button variant="contained" onClick={handleSubmit} color="primary">
+                Add Petty Cash
               </Button>
             </Box>
           </CardContent>
@@ -163,4 +139,4 @@ const AddPattyModal = ({ open, onClose }) => {
   );
 };
 
-export default AddPattyModal;
+export default AddPettyCashModal;

@@ -1,27 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import ApiService from "../../service/ApiService";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Button,
-  Avatar,
-  CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Pagination,
+  Box, Typography, Table, TableBody, TableCell, TableHead,
+  TableRow, Button, Avatar, CircularProgress, FormControl,
+  InputLabel, Select, MenuItem, TextField, Pagination,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 
-const DeliveryFilter = () => {
+const DeliveryFilterComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -38,9 +25,9 @@ const DeliveryFilter = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+
   const itemsPerPage = 5;
 
   const showMessage = (msg) => {
@@ -48,43 +35,18 @@ const DeliveryFilter = () => {
     setTimeout(() => setMessage(""), 4000);
   };
 
-  useEffect(() => {
-    const initialize = async () => {
-      try {
-        setLoading(true);
-        const today = new Date().toISOString().split("T")[0];
-        let initialDate = today;
+  const updateQueryParams = useCallback((user, date) => {
+    const params = new URLSearchParams();
+    if (user && user !== "all") params.set("user", user);
+    if (date && date !== "all") params.set("date", date);
+    const queryString = params.toString();
+    navigate(
+      { pathname: location.pathname, search: queryString ? `?${queryString}` : "" },
+      { replace: true }
+    );
+  }, [navigate, location.pathname]);
 
-        if (isAdmin) {
-          const userData = await ApiService.getAllUsers();
-          setUsers(userData?.users || []);
-          setSelectedUser("all");
-          setSelectedDate(initialDate);
-          updateQueryParams("all", initialDate);
-          await fetchData("all", initialDate);
-        } else {
-          const user = await ApiService.getLoggedInUsesInfo();
-          if (user) {
-            const userId = user.id;
-            setUsers([{ id: userId, name: user.name, profileImageUrl: user.profileImageUrl }]);
-            setSelectedUser(userId);
-            setSelectedDate(initialDate);
-            updateQueryParams(userId, initialDate);
-            await fetchData(userId, initialDate);
-          }
-        }
-      } catch (error) {
-        console.error("Initialization Error:", error);
-        showMessage(error.response?.data?.message || "Initialization failed");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initialize();
-  }, [isAdmin]);
-
-  const fetchData = async (user, date) => {
+  const fetchData = useCallback(async (user, date) => {
     setLoading(true);
     try {
       let response;
@@ -105,39 +67,51 @@ const DeliveryFilter = () => {
         data = response;
       } else if (response && typeof response === "object" && Object.keys(response).length > 0) {
         data = [response];
-      } else {
-        data = [];
       }
 
       setReviews(data);
       setTotalPages(Math.ceil(data.length / itemsPerPage));
     } catch (error) {
-      console.error("Fetch Error:", error);
       showMessage(error.response?.data?.message || "Error fetching data");
       setReviews([]);
       setTotalPages(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const updateQueryParams = (user, date) => {
-    const params = new URLSearchParams();
-    if (user && user !== "all") {
-      params.set("user", user);
-    }
-    if (date && date !== "all") {
-      params.set("date", date);
-    }
-    const queryString = params.toString();
-    navigate(
-      {
-        pathname: location.pathname,
-        search: queryString ? `?${queryString}` : "",
-      },
-      { replace: true }
-    );
-  };
+  useEffect(() => {
+    const initialize = async () => {
+      try {
+        setLoading(true);
+        const today = new Date().toISOString().split("T")[0];
+
+        if (isAdmin) {
+          const userData = await ApiService.getAllUsers();
+          setUsers(userData?.users || []);
+          setSelectedUser("all");
+          setSelectedDate(today);
+          updateQueryParams("all", today);
+          await fetchData("all", today);
+        } else {
+          const user = await ApiService.getLoggedInUserInfo();
+          if (user) {
+            setUsers([{ id: user.id, name: user.name }]);
+            setSelectedUser(user.id);
+            setSelectedDate(today);
+            updateQueryParams(user.id, today);
+            await fetchData(user.id, today);
+          }
+        }
+      } catch (error) {
+        showMessage(error.response?.data?.message || "Initialization failed");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initialize();
+  }, [isAdmin, fetchData, updateQueryParams]);
 
   const handleFilterClick = async () => {
     setLoading(true);
@@ -148,7 +122,6 @@ const DeliveryFilter = () => {
       await fetchData(actualUser, selectedDate);
       setHasAppliedFilters(true);
     } catch (error) {
-      console.error("Filter Error:", error);
       showMessage(error.response?.data?.message || "Error applying filters");
     } finally {
       setLoading(false);
@@ -158,7 +131,6 @@ const DeliveryFilter = () => {
   const handleClearFilters = async () => {
     const today = new Date().toISOString().split("T")[0];
     const resetUser = isAdmin ? "all" : users[0]?.id;
-
     setSelectedUser(resetUser);
     setSelectedDate(today);
     setCurrentPage(1);
@@ -167,47 +139,32 @@ const DeliveryFilter = () => {
     setHasAppliedFilters(false);
   };
 
-  const formatNumber = (num) => {
-    return typeof num === "number" ? num.toFixed(2) : "-";
-  };
+  const formatNumber = (num) => (typeof num === "number" ? num.toFixed(2) : "-");
 
   return (
     <>
       {message && (
-        <Typography color="error" sx={{ mb: 2 }}>
-          {message}
-        </Typography>
+        <Typography color="error" sx={{ mb: 2 }}>{message}</Typography>
       )}
+
       <Box sx={{ px: 3, py: 3, bgcolor: "#fdfbfb" }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            mb: 3,
-            flexWrap: "wrap",
-          }}
-        >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3, flexWrap: "wrap" }}>
           <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel id="user-filter-label">User</InputLabel>
+            <InputLabel>Rider</InputLabel>
             <Select
-              labelId="user-filter-label"
-              id="user-filter"
               value={selectedUser}
-              label="User"
+              label="Rider"
               onChange={(e) => setSelectedUser(e.target.value)}
               disabled={!isAdmin}
             >
               <MenuItem value="all">All</MenuItem>
               {users.map((user) => (
-                <MenuItem key={user.id} value={user.id}>
-                  {user.name}
-                </MenuItem>
+                <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>
               ))}
             </Select>
           </FormControl>
+
           <TextField
-            id="date-filter"
             label="Date"
             type="date"
             value={selectedDate === "all" ? "" : selectedDate}
@@ -215,6 +172,7 @@ const DeliveryFilter = () => {
             InputLabelProps={{ shrink: true }}
             sx={{ minWidth: 150 }}
           />
+
           <Button variant="contained" onClick={handleFilterClick} disabled={loading}>
             {loading ? <CircularProgress size={24} /> : "Apply Filters"}
           </Button>
@@ -232,54 +190,52 @@ const DeliveryFilter = () => {
               <CircularProgress />
             </Box>
           ) : reviews.length > 0 ? (
-            <>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: "bold" }}>Rider</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Delivery Charge</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Card/Online</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Patty Cash</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Total Expenses</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Balance</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {reviews
-                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                    .map((review, idx) => (
-                      <TableRow hover key={idx}>
-                        <TableCell>
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Avatar
-                              src={review.profileImageUrl || review.userProfileImageUrl || ""}
-                              alt={review.userName || review.riderName}
-                              sx={{ width: 32, height: 32 }}
-                            >
-                              {!(review.profileImageUrl || review.userProfileImageUrl) &&
-                                (review.userName || review.riderName
-                                  ? (review.userName || review.riderName).charAt(0).toUpperCase()
-                                  : <PersonIcon />)}
-                            </Avatar>
-                            {review.userName || review.riderName || "Unknown"}
-                          </Box>
-                        </TableCell>
-                        <TableCell>
-                          {review.date ? new Date(review.date).toLocaleDateString() : review.dateName || "-"}
-                        </TableCell>
-                        <TableCell align="right">{formatNumber(review.totalDeliveryCharge)}</TableCell>
-                        <TableCell align="right">{formatNumber(review.totalCardOrOnlinePayment)}</TableCell>
-                        <TableCell align="right">{formatNumber(review.totalPattyCash)}</TableCell>
-                        <TableCell align="right">{formatNumber(review.totalExpenses)}</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                          {formatNumber(review.balanceAmount)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: "bold" }}>Rider</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Delivery Charge</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Petty Cash</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Card/Online</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Total Expenses</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Balance</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {reviews
+                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                  .map((review, idx) => (
+                    <TableRow hover key={idx}>
+                      <TableCell>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Avatar
+                            src={review.profileImageUrl || ""}
+                            alt={review.userName}
+                            sx={{ width: 32, height: 32 }}
+                          >
+                            {!review.profileImageUrl &&
+                              (review.userName
+                                ? review.userName.charAt(0).toUpperCase()
+                                : <PersonIcon />)}
+                          </Avatar>
+                          {review.userName || "Unknown"}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        {review.date ? new Date(review.date).toLocaleDateString() : "-"}
+                      </TableCell>
+                      <TableCell align="right">{formatNumber(review.totalDeliveryCharge)}</TableCell>
+                      <TableCell align="right">{formatNumber(review.totalPettyCash)}</TableCell>
+                      <TableCell align="right">{formatNumber(review.totalCardOrOnlinePayment)}</TableCell>
+                      <TableCell align="right">{formatNumber(review.totalExpenses)}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                        {formatNumber(review.balanceAmount)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
           ) : (
             <Typography sx={{ p: 3 }}>No review data found</Typography>
           )}
@@ -302,4 +258,4 @@ const DeliveryFilter = () => {
   );
 };
 
-export default DeliveryFilter;
+export default DeliveryFilterComponent;

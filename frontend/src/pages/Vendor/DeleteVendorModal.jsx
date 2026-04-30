@@ -2,24 +2,14 @@ import React from "react";
 import { Modal, Box, Typography, Button, Backdrop, Fade, Stack } from "@mui/material";
 
 const DeleteVendorModal = ({ open, handleClose, onConfirm }) => (
-  <Modal
-    open={open}
-    onClose={handleClose}
-    closeAfterTransition
-    BackdropComponent={Backdrop}
-    BackdropProps={{ timeout: 500 }}
-  >
+  <Modal open={open} onClose={handleClose} closeAfterTransition
+    BackdropComponent={Backdrop} BackdropProps={{ timeout: 500 }}>
     <Fade in={open}>
       <Box sx={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 300,
-        bgcolor: 'background.paper',
-        p: 4,
-        borderRadius: 2,
-        textAlign: 'center'
+        position: "absolute", top: "50%", left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: 300, bgcolor: "background.paper",
+        p: 4, borderRadius: 2, textAlign: "center",
       }}>
         <Typography variant="body1" mb={3}>
           Are you sure you want to delete this vendor?
